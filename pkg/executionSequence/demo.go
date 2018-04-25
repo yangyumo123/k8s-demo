@@ -6,5 +6,5 @@ import (
 
 // Demo test
 func Demo() {
-	fmt.Println("demo")
+	fmt.Println("executionSequence-demo.go Demo()")
 }

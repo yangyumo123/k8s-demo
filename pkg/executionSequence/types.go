@@ -9,8 +9,8 @@ const esConst = "esConst"
 var esVar = "esVar"
 
 func init() {
-	fmt.Println(esConst)
+	fmt.Println("executionSequence-types.go-init " + esConst)
 }
 func init() {
-	fmt.Println(esVar)
+	fmt.Println("executionSequence-types.go-init " + esVar)
 }
