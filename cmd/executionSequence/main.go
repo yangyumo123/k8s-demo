@@ -7,30 +7,25 @@ import (
 	_ "github.com/yangyumo123/k8s-demo/pkg/executionSequence2"
 )
 
-const mainConstA = "ca"
-const mainConstB = "cb"
+var mainVar = "v"
+
+const mainConst = "c"
 
 func init() {
 	var mainInitVar = mainInitVarFunc("demo")
+	const mainInitConst = "demo"
 	fmt.Println(mainInitVar)
-	const mainInitConst string = "demo"
 	fmt.Println(mainInitConst)
-	fmt.Println(mainVarA)
 }
-
-var mainVarA = "va"
-var mainVarB = "vb"
 
 func mainInitVarFunc(demo string) string {
 	return demo
 }
 
 func main() {
-	fmt.Println(mainVarA)
-	fmt.Println(mainVarB)
-	fmt.Println(mainConstA)
-	fmt.Println(mainConstB)
+	fmt.Println(mainVar)
+	fmt.Println(mainConst)
 	executionSequence.Demo()
-	// fmt.Println(executionSequence2.EsConst)
-	// executionSequence2.Demo()
+	// fmt.Println(executionSequence2.EsConst)      //undefined: executionSequence2
+	// executionSequence2.Demo()                    //undefined: executionSequence2
 }
