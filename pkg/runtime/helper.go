@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"conversion"
 	"fmt"
 	"reflect"
 )
@@ -8,6 +9,24 @@ import (
 var DefaultResourceVersioner ResourceVersioner = NewJSONBaseResourceVersioner()
 var DefaultScheme = NewScheme("", "v1beta1")
 var DefaultCodec Codec = DefaultScheme
+
+type Scheme struct {
+	raw *conversion.Scheme
+}
+
+func NewScheme(internalVersion string, externalVersion string) *Scheme {
+	s := &Scheme{conversion.NewScheme()}
+	s.raw.InternalVersion = internalVersion
+	s.raw.ExternalVersion = externalVersion
+	s.raw.MetaInsertionFactory = metaInsertion{}
+}
+
+type metaInsertion struct {
+	JSONBase struct {
+		APIVersion string `json:"apiVersion,omitempty" yaml:"apiVersion,omitempty"`
+		Kind       string `json:"kind,omitempty" yaml:"kind,omitempty"`
+	} `json:",inline" yaml:",inline"`
+}
 
 func FindJSONBase(obj Object) (JSONBaseInterface, error) {
 	v, err := enforcePtr(obj)

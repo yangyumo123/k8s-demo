@@ -30,14 +30,23 @@ func main() {
 	// value info
 	v := reflect.ValueOf(json)
 
-	// demo1: get struct field
-	printStructField(&t)
+	// demo1: Object -> reflect -> Object
+	demoFunc1(&v)
 
-	// demo2: get struct method
+	// demo2: Type -> Object
+	demoFunc2(&t)
+
+	// demo3: get struct field
+	printStructField(&t, &v)
+
+	// demo4: modify Object
+	modify(&t, &v)
+
+	// demo5: get struct method
 	callSetMethod(&v, "SetID", []interface{}{"demo2"})
 	callGetMethod(&v, "GetID")
 
-	// demo3: get struct tag
+	// demo6: get struct tag
 	getTag(&t, "ID", "json")
 	getTag(&t, "Kind", "json")
 	getTag(&t, "APIVersion", "json")
@@ -45,16 +54,69 @@ func main() {
 	getTag(&t, "Name", "json")
 }
 
-// demo1: get struct field name
-func printStructField(t *reflect.Type) {
+// demo1: Object -> reflect -> Object
+func demoFunc1(v *reflect.Value) {
+	if s, ok := (*v).Interface().(reflectDemo.DemoJSONBase); ok {
+		fmt.Printf("The DemonJSONBase is %s\n", *s.ID)
+		fmt.Printf("The DemonJSONBase is %s\n", *s.Kind)
+		fmt.Printf("The DemonJSONBase is %s\n", *s.APIVersion)
+		fmt.Printf("The DemonJSONBase is %d\n", *s.ResourceVersion)
+		fmt.Printf("The DemonJSONBase is %s\n", s.Name)
+		fmt.Printf("The DemonJSONBase is %s\n", s.Value)
+	} else {
+		fmt.Println("error")
+	}
+}
+
+// demo2: Type -> Object
+func demoFunc2(t *reflect.Type) {
+	v := reflect.New(*t)
+	fmt.Println(v.Type().String())
+}
+
+// demo3: traverse struct field
+func printStructField(t *reflect.Type, v *reflect.Value) {
 	fieldNum := (*t).NumField()
 	for i := 0; i < fieldNum; i++ {
+		fv := (*v).Field(i)
+		ft := (*t).Field(i)
+		switch fv.Kind() {
+		case reflect.String:
+			fmt.Printf("The %d th %s types %s valuing %s\n", i, ft.Name, "string", fv.String())
+		case reflect.Int:
+			fmt.Printf("The %d th %s types %s valuing %d\n", i, ft.Name, "int", fv.Int())
+		case reflect.Ptr:
+			p := fv.Pointer()
+			fmt.Printf("The %d th %s types %s valuing %v\n", i, ft.Name, "pointer", p)
+		}
 		fmt.Printf("field: %s\n", (*t).Field(i).Name)
 	}
 	fmt.Println("")
 }
 
-// demo2: call struct method
+// demo4: modify Object
+func modify(t *reflect.Type, v *reflect.Value) {
+	for i := 0; i < (*v).NumField(); i++ {
+		fv := (*v).Field(i)
+		ft := (*t).Field(i)
+		if !fv.CanSet() {
+			fmt.Printf("The %d th %s is unaccessible\n", i, ft.Name)
+		}
+		switch fv.Kind() {
+		case reflect.String:
+			fv.SetString("test")
+			fmt.Printf("string %s\n", ft.Name)
+		case reflect.Int:
+			fv.SetInt(18)
+			fmt.Printf("int %s\n", ft.Name)
+		case reflect.Ptr:
+			fmt.Printf("ptr %v\n", ft.Name)
+			continue
+		}
+	}
+}
+
+// demo5: call struct method
 func callSetMethod(v *reflect.Value, method string, params []interface{}) {
 	f := (*v).MethodByName(method)
 	if f.IsValid() {
@@ -84,7 +146,7 @@ func callGetMethod(v *reflect.Value, method string) {
 	fmt.Println("")
 }
 
-// demo3: get struct tag
+// demo6: get struct tag
 func getTag(t *reflect.Type, field string, tagName string) {
 	var (
 		tagVal string
