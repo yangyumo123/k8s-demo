@@ -1,9 +1,10 @@
 package runtime
 
 import (
-	"conversion"
 	"fmt"
 	"reflect"
+
+	"github.com/yangyumo123/k8s-demo/pkg/conversion"
 )
 
 var DefaultResourceVersioner ResourceVersioner = NewJSONBaseResourceVersioner()
@@ -28,6 +29,21 @@ type metaInsertion struct {
 	} `json:",inline" yaml:",inline"`
 }
 
+func (metaInsertion) Create(version, kind string) interface{} {
+	m := metaInsertion{}
+	m.JSONBase.APIVersion = version
+	m.JSONBase.Kind = kind
+	return &m
+}
+func (metaInsertion) Interpret(in interface{}) (version, kind string) {
+	m, ok := in.(*metaInsertion)
+	if !ok {
+		return "", ""
+	}
+	return m.JSONBase.APIVersion, m.JSONBase.Kind
+}
+
+// FindJSONBase test
 func FindJSONBase(obj Object) (JSONBaseInterface, error) {
 	v, err := enforcePtr(obj)
 	if err != nil {
@@ -91,4 +107,13 @@ func fieldPtr(v reflect.Value, fieldName string, dest interface{}) error {
 		return nil
 	}
 	return fmt.Errorf("")
+}
+
+// AddKnownTypes register Object
+func (s *Scheme) AddKnownTypes(version string, types ...Object) {
+	interfaces := make([]interface{}, len(types))
+	for i := range interfaces {
+		interfaces[i] = types[i]
+	}
+	s.raw.AddKnownTypes(version, interfaces)
 }

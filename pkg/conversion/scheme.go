@@ -45,3 +45,24 @@ func (metaInsertion) Interpret(in interface{}) (version, kind string) {
 	m := in.(*metaInsertion)
 	return m.Version, m.Kind
 }
+
+// AddKnownTypes register interface{}
+func (s *Scheme) AddKnownTypes(version string, types ...interface{}) {
+	knownTypes, found := s.versionMap[version]
+	if !found {
+		knownTypes = map[string]reflect.Type{}
+		s.versionMap[version] = knownTypes
+	}
+	for _, value := range types {
+		t := reflect.TypeOf(value)
+		if t.Kind() != reflect.Ptr {
+			panic("")
+		}
+		t = t.Elem()
+		if t.Kind() != reflect.Struct {
+			panic("")
+		}
+		knownTypes[t.Name()] = t
+		s.typeToVersion[t] = version
+	}
+}
